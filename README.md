@@ -1,4 +1,5 @@
-# This repo contains different projects that we are planning to build to perform deep dives on technologies with hands on lessons
+# Intro
+This repo contains different projects that we are planning to build to perform deep dives on technologies with hands on lessons
 
 # Scenarios
 
