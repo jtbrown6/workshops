@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-ui-config
+  namespace: configmap-lab
+data:
+  WELCOME_MESSAGE: "Welcome to the ConfigMap, Volume & Secret lab!"
+  LINK_TEXT: "Secret management patterns"
+  LINK_URL: "https://kubernetes.io/docs/concepts/configuration/secret/"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-ui-files
+  namespace: configmap-lab
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>ConfigMap + Secret Demo</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+          :root { color-scheme: light dark; }
+          body { font-family: 'Inter', sans-serif; background:#0f172a; color:#e2e8f0; margin:0; padding:0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+          main { background:#1e293b; padding:3rem; border-radius:1rem; box-shadow:0 30px 60px rgba(15,23,42,.55); max-width:760px; width:90%; }
+          h1 { font-size:2.25rem; margin-bottom:1rem; }
+          p { line-height:1.7; margin-bottom:1rem; }
+          .panel { background:rgba(14,116,144,.25); border-left:4px solid #0ea5e9; padding:1rem; border-radius:.75rem; margin-top:2rem; }
+          code { background:rgba(148,163,184,.2); padding:.2rem .45rem; border-radius:.35rem; }
+          footer { margin-top:2rem; font-size:.85rem; color:#94a3b8; }
+          .secret-box { margin-top:1.5rem; background:rgba(15,118,110,.28); border-radius:.75rem; padding:1.25rem; }
+          .secret-value { font-family: 'Fira Code', monospace; font-size:1.15rem; letter-spacing:.08em; }
+        </style>
+      </head>
+      <body>
+        <main>
+          <h1 id="headline">Loading headline...</h1>
+          <p id="blurb"></p>
+          <div class="panel">
+            <strong>Volume-powered UI</strong>
+            <p id="panelCopy"></p>
+            <p><a id="docsLink" href="#" target="_blank" rel="noopener">Read more in the docs</a></p>
+          </div>
+          <div class="secret-box">
+            <h2>Runtime Secret Peek (demo only!)</h2>
+            <p>The pod mounts a Kubernetes Secret and nginx serves it from <code>/runtime/api-token.txt</code>. We mask everything but the closing characters.</p>
+            <p class="secret-value" id="secretValue">Loading secret…</p>
+          </div>
+          <footer>
+            Want the raw file? Run <code>kubectl exec deploy/nginx-lab -n configmap-lab -- cat /runtime/api-token.txt</code>
+          </footer>
+        </main>
+        <script src="./lab-data.js"></script>
+        <script>
+          const cfg = window.LAB_CONFIG || {};
+          document.getElementById('headline').textContent = cfg.headline || 'No headline found';
+          document.getElementById('blurb').textContent = cfg.blurb || '';
+          document.getElementById('panelCopy').textContent = cfg.panel || '';
+          document.getElementById('docsLink').textContent = cfg.linkText || 'Docs';
+          document.getElementById('docsLink').href = cfg.linkUrl || '#';
+
+          fetch('./runtime/api-token.txt')
+            .then(resp => resp.text())
+            .then(secret => {
+              const trimmed = secret.trim();
+              const masked = trimmed.length > 4
+                ? `${'•'.repeat(Math.max(0, trimmed.length - 4))}${trimmed.slice(-4)}`
+                : trimmed;
+              document.getElementById('secretValue').textContent = masked || 'Secret not available';
+            })
+            .catch(() => {
+              document.getElementById('secretValue').textContent = 'Unable to read secret file';
+            });
+        </script>
+      </body>
+    </html>
+  lab-data.js: |
+    window.LAB_CONFIG = {
+      headline: "Secrets ride along with ConfigMaps, but with stricter security rules.",
+      blurb: "This HTML and JavaScript still come straight from the ConfigMap volume you saw before. We layered on a Secret, mounted it into nginx, and the UI fetches it from a runtime-only path.",
+      panel: "Remember: ConfigMaps hot reload when mounted as volumes. Secrets behave the same way, but treat them as sensitive—lock down RBAC and enable encryption at rest.",
+      callToAction: "Rotate the secret, reapply, refresh, repeat.",
+      linkText: "Secret management patterns",
+      linkUrl: "https://kubernetes.io/docs/concepts/configuration/secret/"
+    };

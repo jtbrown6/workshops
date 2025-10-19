@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-ui-config
+  namespace: configmap-lab
+data:
+  WELCOME_MESSAGE: "Welcome to the ConfigMap & Volume lab!"
+  LINK_TEXT: "Open the Kubernetes docs"
+  LINK_URL: "https://kubernetes.io/docs/concepts/configuration/configmap/"

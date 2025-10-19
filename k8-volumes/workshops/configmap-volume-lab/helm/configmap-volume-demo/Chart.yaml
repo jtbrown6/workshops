@@ -1,0 +1,6 @@
+apiVersion: v2
+name: configmap-volume-demo
+description: Simple Helm chart for demonstrating ConfigMaps, Secrets, and volumes with nginx
+type: application
+version: 0.1.0
+appVersion: "1.25.0"
